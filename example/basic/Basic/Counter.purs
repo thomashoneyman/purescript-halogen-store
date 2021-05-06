@@ -7,36 +7,46 @@ import Data.Maybe (Maybe(..))
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.HTML.Events as HE
-import Halogen.Store.Connect (Connected, connectWith)
+import Halogen.Store.Connect (Connected, connect)
 import Halogen.Store.Monad (class MonadStore)
 import Halogen.Store.Monad as Store
-import Halogen.Store.Select (selectEq)
+import Halogen.Store.Select (Selector, selectEq)
+
+type Input = Unit
+
+type State = Int
 
 data Action
   = Increment
   | Decrement
-  | Receive (Connected Int Unit)
+  | Receive (Connected Int Input)
+
+deriveState :: Connected Int Input -> State
+deriveState { context } = context
+
+selectCount :: Selector BS.Store Int
+selectCount = selectEq _.count
 
 component :: forall q o m. MonadStore BS.Action BS.Store m => H.Component q Unit o m
-component = connectWith (selectEq _.count) $ H.mkComponent
+component = connect selectCount $ H.mkComponent
   { initialState: deriveState
-  , render: \count ->
-      HH.div_
-        [ HH.button
-            [ HE.onClick \_ -> Increment ]
-            [ HH.text "Increment"]
-        , HH.text $ " Count: " <> show count <> " "
-        , HH.button
-            [ HE.onClick \_ -> Decrement ]
-            [ HH.text "Decrement" ]
-        ]
+  , render
   , eval: H.mkEval $ H.defaultEval
       { handleAction = handleAction
       , receive = Just <<< Receive
       }
   }
   where
-  deriveState { context } = context
+  render count =
+    HH.div_
+      [ HH.button
+          [ HE.onClick \_ -> Increment ]
+          [ HH.text "Increment"]
+      , HH.text $ " Count: " <> show count <> " "
+      , HH.button
+          [ HE.onClick \_ -> Decrement ]
+          [ HH.text "Decrement" ]
+      ]
 
   handleAction = case _ of
     Increment ->

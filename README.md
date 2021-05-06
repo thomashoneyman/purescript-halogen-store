@@ -14,7 +14,7 @@ spago install halogen-store
 
 This library provides global state management for Halogen applications. Writing applications with `halogen-store` comes down to three major steps, detailed in the next three sections:
 
-1. [Creating the store](#creating-a-store)
+1. [Creating the store](#creating-the-store)
 2. [Using the store](#using-the-store)
 3. [Running the application](#running-the-application)
 
@@ -92,9 +92,9 @@ handleAction = case _ of
     updateStore BS.Increment
 ```
 
-In practice it's common to send actions to the store with `updateStore`, but it's somewhat rare to use `getStore` or `emitSelected`. That's because there's an easy way to subscribe a component to the store and always keep its state in sync with the central store: the `connect*` functions.
+In practice it's common to send actions to the store with `updateStore`, but it's somewhat rare to use `getStore` or `emitSelected`. That's because there's an easy way to subscribe a component to the store and always keep its state in sync with the central store: the `connect` function.
 
-A component that uses a `connect*` function will receive the central state as part of its component input. That means it can use the central state with `initialState` and stay subscribed to all future state updates via the receiver. This is the easiest way to stay in sync with the store over time.
+A component that uses `connect` function will receive the central state as part of its component input. That means it can use the central state with `initialState` and stay subscribed to all future state updates via the receiver. This is the easiest way to stay in sync with the store over time.
 
 For example, the component below will receive the store's current value when it initializes and will receive the store's new value each time it changes:
 
@@ -103,14 +103,14 @@ import Basic.Store as BS
 import Data.Maybe (Maybe(..))
 import Halogen as H
 import Halogen.Store.Connect (Connected, connect)
+import Halogen.Store.Selector (selectAll)
 
 type Input = Unit
 
--- The current count, retrieved from the store
-type State = Int
+type State = { count :: Int }
 
 deriveState :: Connected BS.Store Input -> State
-deriveState { context, input } = context.count
+deriveState { context, input } = { count: context.count }
 
 data Action
   = Receive (Connected BS.Store Input)
@@ -119,9 +119,9 @@ component
   :: forall q i o m
    . MonadStore BS.Action BS.Store m
   => H.Component q i o m
-component = connect $ H.mkComponent
+component = connect selectAll $ H.mkComponent
   { initialState: deriveState
-  , render: \count -> ...
+  , render: \{ count } -> ...
   , eval: H.mkEval $ H.defaultEval
       { handleAction = handleAction
       , receive = Just <<< Receive
@@ -133,48 +133,34 @@ component = connect $ H.mkComponent
       H.put $ deriveState input
 ```
 
-#### Connecting to a sub-part of the store
-
 In the real world we can't afford to update every connected component any time the central state changes; this would be incredibly inefficient. Instead, we want to only updated connected components when the bit of state they are concerned with has changed.
 
-We can use a `Selector` to retrieve part of our central state and only be notified when the state we've selected has changed. When using selectors, use the `connectWith` function instead of `connect`.
+We can use a `Selector` to retrieve part of our central state and only be notified when the state we've selected has changed. In the previous example we used `selectAll` to just grab the entire store, but usually we'd write our own selector.
 
-Imagine that our store actually contained dozens of fields in addition to the `count` field we've implemented, but we only want to subscribe to that field. We can do that by adjusting our component from the last section:
+Imagine that our store actually contained dozens of fields in addition to the `count` field we've implemented, but we only want to subscribe to that field. Let's do that by adjusting our component from the last section.
 
-```diff
-+ import Halogen.Store.Connect (Connected, connectWith)
-- import Halogen.Store.Connect (Connected, connect)
-+ import Halogen.Store.Selector (Selector, selectEq)
+```purs
+import Halogen.Store.Selector (Selector, selectEq)
 
-+ deriveState :: Connected Int Input -> State
-+ deriveState { context, input } = context
-- deriveState :: Connected BS.Store Input -> State
-- deriveState { context, input } = context.count
+-- We are no longer connected to the entire store; we're only connected to
+-- the `count` field, which is of type `Int`.
+deriveState :: Connected Int Input -> State
+deriveState { context, input } = { count: context }
 
-+ selectCount :: Selector BS.Store Int
-+ selectCount = selectEq _.count
+selectCount :: Selector BS.Store Int
+selectCount = selectEq \store -> store.count
 
-  data Action
-+   = Receive (Connected Int Input)
--   = Receive (Connected BS.Store Input)
+data Action
+  = Receive (Connected Int Input)
 
-  component
-    :: forall q i o m
-     . MonadStore BS.Action BS.Store m
-    => H.Component q i o m
-+ component = connectWith selectCount $ H.mkComponent
-- component = connect $ H.mkComponent
-    { initialState: deriveState
-    , render: \count -> ...
-    , eval: H.mkEval $ H.defaultEval
-        { handleAction = handleAction
-        , receive = Just <<< Receive
-        }
-    }
-    where
-    handleAction = case _ of
-      Receive input ->
-        H.put $ deriveState input
+component
+  :: forall q i o m
+   . MonadStore BS.Action BS.Store m
+  => H.Component q i o m
+component = connect selectCount $ H.mkComponent
+  { initialState: deriveState
+  , ...
+  }
 ```
 
 Now, even if other fields in our state are regularly changing, this component will only receive new input when the `count` field has changed.

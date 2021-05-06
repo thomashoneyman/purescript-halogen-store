@@ -1,9 +1,7 @@
 module Halogen.Store.Connect
   ( Connected
   , connect
-  , connectWith
   , subscribe
-  , subscribeWith
   ) where
 
 import Prelude
@@ -13,7 +11,7 @@ import Effect.Class (class MonadEffect)
 import Halogen as H
 import Halogen.HTML as HH
 import Halogen.Store.Monad (class MonadStore, emitSelected, getStore)
-import Halogen.Store.Select (Selector(..), selectAll)
+import Halogen.Store.Select (Selector(..))
 import Type.Proxy (Proxy(..))
 import Unsafe.Reference (unsafeRefEq)
 
@@ -29,21 +27,13 @@ data Action context input output
   | Raise output
 
 connect
-  :: forall action store query input output m
-   . MonadEffect m
-  => MonadStore action store m
-  => H.Component query (Connected store input) output m
-  -> H.Component query input output m
-connect = connectWith selectAll
-
-connectWith
   :: forall action store context query input output m
    . MonadEffect m
   => MonadStore action store m
   => Selector store context
   -> H.Component query (Connected context input) output m
   -> H.Component query input output m
-connectWith (Selector selector) component =
+connect (Selector selector) component =
   H.mkComponent
     { initialState
     , render
@@ -78,7 +68,7 @@ connectWith (Selector selector) component =
 
   handleAction = case _ of
     Initialize -> do
-      subscribeWith (Selector selector) Update
+      subscribe (Selector selector) Update
       context <- map selector.select getStore
       H.modify_ _ { context = Just context }
 
@@ -96,18 +86,11 @@ connectWith (Selector selector) component =
       H.raise output
 
 subscribe
-  :: forall storeAction store state action slots output m
-   . MonadStore storeAction store m
-  => (store -> action)
-  -> H.HalogenM state action slots output m Unit
-subscribe = subscribeWith selectAll
-
-subscribeWith
   :: forall storeAction store context state action slots output m
    . MonadStore storeAction store m
   => Selector store context
   -> (context -> action)
   -> H.HalogenM state action slots output m Unit
-subscribeWith selector action = do
+subscribe selector action = do
   emitter <- emitSelected selector
   void $ H.subscribe $ map action emitter
