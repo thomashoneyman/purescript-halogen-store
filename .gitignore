@@ -10,3 +10,5 @@ output
 generated-docs
 
 *.lock
+
+example/**/app.js

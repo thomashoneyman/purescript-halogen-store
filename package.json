@@ -1,0 +1,7 @@
+{
+  "scripts": {
+    "build": "spago build",
+    "examples": "npm run examples:basic",
+    "examples:basic": "spago -x example/example.dhall bundle-app --to example/basic/app.js"
+  }
+}

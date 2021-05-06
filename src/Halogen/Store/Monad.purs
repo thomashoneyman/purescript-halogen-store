@@ -18,7 +18,7 @@ import Halogen.Subscription (Emitter, Listener, makeEmitter)
 import Halogen.Subscription as HS
 import Unsafe.Coerce (unsafeCoerce)
 
-class Monad m <= MonadStore a s m | m -> s a where
+class MonadEffect m <= MonadStore a s m | m -> s a where
   getStore :: m s
   updateStore :: a -> m Unit
   emitSelected :: forall s'. Selector s s' -> m (Emitter s')
@@ -45,15 +45,14 @@ derive newtype instance monadAffStoreT :: MonadAff m => MonadAff (StoreT a s m)
 instance monadStoreStoreT :: MonadAff m => MonadStore a s (StoreT a s m) where
   getStore = StoreT do
     store <- ask
-    liftEffect $ Ref.read store.value
+    liftEffect do
+      Ref.read store.value
 
   updateStore action = StoreT do
     store <- ask
-    lift $ update store action
-    where
-    update store a = liftEffect do
+    liftEffect do
       current <- Ref.read store.value
-      let newStore = store.reducer current a
+      let newStore = store.reducer current action
       Ref.write newStore store.value
       HS.notify store.listener newStore
 
@@ -89,7 +88,7 @@ instance monadStoreHalogenM :: MonadStore a s m => MonadStore a s (HalogenM st a
   emitSelected = lift <<< emitSelected
 
 runStoreT
-  :: forall a s m q i o
+  :: forall a s q i o m
    . Monad m
   => s
   -> (s -> a -> s)

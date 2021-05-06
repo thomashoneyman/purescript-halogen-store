@@ -2,6 +2,8 @@ module Halogen.Store.Connect
   ( Connected
   , connect
   , connectWith
+  , subscribe
+  , subscribeWith
   ) where
 
 import Prelude
@@ -76,8 +78,7 @@ connectWith (Selector selector) component =
 
   handleAction = case _ of
     Initialize -> do
-      emitter <- emitSelected (Selector selector)
-      void $ H.subscribe $ map Update emitter
+      subscribeWith (Selector selector) Update
       context <- map selector.select getStore
       H.modify_ _ { context = Just context }
 
@@ -93,3 +94,20 @@ connectWith (Selector selector) component =
 
     Raise output ->
       H.raise output
+
+subscribe
+  :: forall storeAction store state action slots output m
+   . MonadStore storeAction store m
+  => (store -> action)
+  -> H.HalogenM state action slots output m Unit
+subscribe = subscribeWith selectAll
+
+subscribeWith
+  :: forall storeAction store context state action slots output m
+   . MonadStore storeAction store m
+  => Selector store context
+  -> (context -> action)
+  -> H.HalogenM state action slots output m Unit
+subscribeWith selector action = do
+  emitter <- emitSelected selector
+  void $ H.subscribe $ map action emitter
