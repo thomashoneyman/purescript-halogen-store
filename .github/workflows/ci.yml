@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: purescript-contrib/setup-purescript@main
+
+      - name: Build source
+        run: npm run build
+
+      - name: Build examples
+        run: npm run examples

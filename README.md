@@ -1,5 +1,8 @@
 # Halogen Store
 
+[![CI](https://github.com/thomashoneyman/purescript-halogen-store/workflows/CI/badge.svg?branch=main)](https://github.com/thomashoneyman/purescript-halogen-store/actions?query=workflow%3ACI+branch%3Amain)
+[![Maintainer: thomashoneyman](https://img.shields.io/badge/maintainer-thomashoneyman-teal.svg)](http://github.com/thomashoneyman)
+
 Global state management for Halogen, inspired by Redux.
 
 ## Installation
