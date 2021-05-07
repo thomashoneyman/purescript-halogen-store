@@ -44,8 +44,8 @@ data Action = Increment | Decrement
 Finally, we should create a reducer: a function of type `store -> action -> store` that updates our central state when it receives an action. It's somewhat similar to the `handleAction` function you define in your Halogen components, but it can't perform effects.
 
 ```purs
-reducer :: Store -> Action -> Store
-reducer store = case _ of
+reduce :: Store -> Action -> Store
+reduce store = case _ of
   Increment -> store { count = store.count + 1 }
   Decrement -> store { count = store.count - 1 }
 ```
@@ -57,8 +57,8 @@ As a brief aside: actions introduce some boilerplate to your application. If you
 ```purs
 type Action = Store -> Store
 
-reducer :: Store -> Action -> Store
-reducer store k = k store
+reduce :: Store -> Action -> Store
+reduce store k = k store
 ```
 
 This lets you write arbitrary `store -> store` functions and send them to your central state.
@@ -193,6 +193,6 @@ import Halogen.VDom.Driver (runUI)
 main :: Effect Unit
 main = launchAff_ do
   body <- HA.awaitBody
-  root <- runStoreT BS.initialStore BS.reducer Counter.component
+  root <- runStoreT BS.initialStore BS.reduce Counter.component
   runUI root unit body
 ```

@@ -1,7 +1,9 @@
 {
   "scripts": {
     "build": "spago build",
-    "examples": "npm run examples:basic",
-    "examples:basic": "spago -x example/example.dhall bundle-app --to example/basic/app.js"
+    "examples": "npm run examples:basic && npm run examples:basic-no-action && npm run examples:redux-todo",
+    "examples:basic": "spago -x example/example.dhall bundle-app --main Basic.Main --to example/basic/app.js",
+    "examples:basic-no-action": "spago -x example/example.dhall bundle-app --main NoAction.Main --to example/basic-no-action/app.js",
+    "examples:redux-todo": "spago -x example/example.dhall bundle-app --main ReduxTodo.Main --to example/redux-todo/app.js"
   }
 }
