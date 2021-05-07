@@ -2,6 +2,8 @@ module Halogen.Store.Select where
 
 import Prelude
 
+import Unsafe.Reference (unsafeRefEq)
+
 -- | A `Selector` represents a selection `a` from the store `store`. It is
 -- | commonly used with the `connect` and `subscribe` functions when connecting
 -- | a component to the store.
@@ -26,4 +28,4 @@ selectEq = Selector <<< { eq, select: _ }
 
 -- | Create a `Selector` for the entire store.
 selectAll :: forall store. Selector store store
-selectAll = Selector { eq: \_ _ -> false, select: identity }
+selectAll = Selector { eq: unsafeRefEq, select: identity }
