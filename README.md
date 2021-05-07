@@ -4,7 +4,7 @@
 [![Latest release](http://img.shields.io/github/release/thomashoneyman/purescript-halogen-store.svg)](https://github.com/thomashoneyman/purescript-halogen-store/releases)
 [![Maintainer: thomashoneyman](https://img.shields.io/badge/maintainer-thomashoneyman-teal.svg)](http://github.com/thomashoneyman)
 
-Global state management for Halogen, inspired by Redux.
+Global state management for Halogen.
 
 ## Installation
 
