@@ -15,6 +15,8 @@ import Halogen.Store.Select (Selector(..))
 import Type.Proxy (Proxy(..))
 import Unsafe.Reference (unsafeRefEq)
 
+-- | The input type for connected components, containing the selected context
+-- | from the store and the component's ordinary Halogen input.
 type Connected context input =
   { context :: context
   , input :: input
@@ -26,6 +28,9 @@ data Action context input output
   | Update context
   | Raise output
 
+-- | Connect a component to part of the store using a `Selector`. The selected
+-- | state will be provided as part of the component's input. Any time the
+-- | selected state changes the component will be notified with new input.
 connect
   :: forall action store context query input output m
    . MonadEffect m
@@ -85,6 +90,9 @@ connect (Selector selector) component =
     Raise output ->
       H.raise output
 
+-- | Subscribe to changes in the selected state by providing an action to run
+-- | any time the state updates. This can be used to connect components to the
+-- | store with more manual control than `connect` provides.
 subscribe
   :: forall storeAction store context state action slots output m
    . MonadStore storeAction store m

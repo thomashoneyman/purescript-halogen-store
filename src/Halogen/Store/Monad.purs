@@ -18,6 +18,12 @@ import Halogen.Subscription (Emitter, Listener, makeEmitter)
 import Halogen.Subscription as HS
 import Unsafe.Coerce (unsafeCoerce)
 
+-- | The `MonadStore` class captures monads which implement a stored value,
+-- | along with methods to get, update (via an action type, `a`), or subscribe
+-- | to changes in the stored value.
+-- |
+-- | An instance is provided for `StoreT`, which is the standard way to use
+-- | the `MonadStore` class.
 class MonadEffect m <= MonadStore a s m | m -> s a where
   getStore :: m s
   updateStore :: a -> m Unit
@@ -30,6 +36,11 @@ type HalogenStore a s =
   , reducer :: s -> a -> s
   }
 
+-- | The `StoreT` monad transformer is the standard way to use the `MonadStore`
+-- | class. It extends the base monad with a global action `a` used to update
+-- | a global state `s`.
+-- |
+-- | The `MonadStore` type class describes the operations supported by this monad.
 newtype StoreT :: Type -> Type -> (Type -> Type) -> Type -> Type
 newtype StoreT a s m b = StoreT (ReaderT (HalogenStore a s) m b)
 
@@ -87,6 +98,21 @@ instance monadStoreHalogenM :: MonadStore a s m => MonadStore a s (HalogenM st a
   updateStore = lift <<< updateStore
   emitSelected = lift <<< emitSelected
 
+-- | Run a component in the `StoreT` monad.
+-- |
+-- | Requires an initial value for the store, `s`, and a reducer that updates
+-- | the store in response to an action, `a`.
+-- |
+-- | This can be used directly on the root component of your application to
+-- | produce a component that Halogen can run, so long as the base monad can
+-- | be fixed to `Aff`.
+-- |
+-- | ```purs
+-- | main = launchAff_ do
+-- |   body <- Halogen.Aff.awaitBody
+-- |   root <- runStoreT initialStore reducer rootComponent
+-- |   runUI root unit body
+-- | ```
 runStoreT
   :: forall a s q i o m
    . Monad m
