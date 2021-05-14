@@ -16,7 +16,9 @@ spago install halogen-store
 
 ## Quick Start
 
-This library provides global state management for Halogen applications. Writing applications with `halogen-store` comes down to three major steps, detailed in the next three sections:
+This library provides global state management for Halogen applications. A global or central state can help when many components need access to the same information, and threading those values through components via their inputs is either tedious or leads to an explosion of unnecessary fields in state.
+
+Writing applications with `halogen-store` comes down to three major steps, detailed in the next three sections:
 
 1. [Creating the store](#creating-the-store)
 2. [Using the store](#using-the-store)
