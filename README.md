@@ -109,7 +109,7 @@ import Basic.Store as BS
 import Data.Maybe (Maybe(..))
 import Halogen as H
 import Halogen.Store.Connect (Connected, connect)
-import Halogen.Store.Selector (selectAll)
+import Halogen.Store.Select (selectAll)
 
 type Input = Unit
 
@@ -146,7 +146,7 @@ We can use a `Selector` to retrieve part of our central state and only be notifi
 Imagine that our store actually contained dozens of fields in addition to the `count` field we've implemented, but we only want to subscribe to that field. Let's do that by adjusting our component from the last section.
 
 ```purs
-import Halogen.Store.Selector (Selector, selectEq)
+import Halogen.Store.Select (Selector, selectEq)
 
 -- We are no longer connected to the entire store; we're only connected to
 -- the `count` field, which is of type `Int`.
