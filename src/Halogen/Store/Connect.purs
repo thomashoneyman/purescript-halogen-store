@@ -35,10 +35,10 @@ connect
   :: forall action store context query input output m
    . MonadEffect m
   => MonadStore action store m
-  => Selector store context
+  => (input -> Selector store context)
   -> H.Component query (Connected context input) output m
   -> H.Component query input output m
-connect (Selector selector) component =
+connect mkSelector component =
   H.mkComponent
     { initialState
     , render
@@ -73,6 +73,7 @@ connect (Selector selector) component =
 
   handleAction = case _ of
     Initialize -> do
+      (Selector selector) <- mkSelector <$> H.gets _.input
       subscribe (Selector selector) Update
       context <- map selector.select getStore
       H.modify_ _ { context = Just context }
