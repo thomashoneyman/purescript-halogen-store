@@ -125,7 +125,7 @@ component
   :: forall q i o m
    . MonadStore BS.Action BS.Store m
   => H.Component q i o m
-component = connect selectAll $ H.mkComponent
+component = connect (\_ -> selectAll) $ H.mkComponent
   { initialState: deriveState
   , render: \{ count } -> ...
   , eval: H.mkEval $ H.defaultEval
@@ -163,7 +163,7 @@ component
   :: forall q i o m
    . MonadStore BS.Action BS.Store m
   => H.Component q i o m
-component = connect selectCount $ H.mkComponent
+component = connect (\_ -> selectCount) $ H.mkComponent
   { initialState: deriveState
   , ...
   }

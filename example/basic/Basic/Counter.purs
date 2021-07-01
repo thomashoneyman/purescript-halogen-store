@@ -28,7 +28,7 @@ selectCount :: Selector BS.Store Int
 selectCount = selectEq _.count
 
 component :: forall q o m. MonadStore BS.Action BS.Store m => H.Component q Unit o m
-component = connect selectCount $ H.mkComponent
+component = connect (\_ -> selectCount) $ H.mkComponent
   { initialState: deriveState
   , render
   , eval: H.mkEval $ H.defaultEval

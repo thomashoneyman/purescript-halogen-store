@@ -31,7 +31,7 @@ component
   :: forall q o m
    . MonadStore NAS.Action NAS.Store m
   => H.Component q Unit o m
-component = connect selectState $ H.mkComponent
+component = connect (\_ -> selectState) $ H.mkComponent
   { initialState: deriveState
   , render
   , eval: H.mkEval $ H.defaultEval
