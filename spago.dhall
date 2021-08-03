@@ -4,11 +4,13 @@
   , "effect"
   , "foldable-traversable"
   , "halogen"
+  , "halogen-hooks"
   , "halogen-subscriptions"
   , "maybe"
   , "prelude"
   , "refs"
   , "transformers"
+  , "tuples"
   , "unsafe-coerce"
   , "unsafe-reference"
   ]

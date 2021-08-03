@@ -4,6 +4,7 @@
     "examples": "npm run examples:basic && npm run examples:basic-no-action && npm run examples:redux-todo",
     "examples:basic": "spago -x example/example.dhall bundle-app --main Basic.Main --to example/basic/app.js",
     "examples:basic-no-action": "spago -x example/example.dhall bundle-app --main NoAction.Main --to example/basic-no-action/app.js",
-    "examples:redux-todo": "spago -x example/example.dhall bundle-app --main ReduxTodo.Main --to example/redux-todo/app.js"
+    "examples:redux-todo": "spago -x example/example.dhall bundle-app --main ReduxTodo.Main --to example/redux-todo/app.js",
+    "examples:basic-hooks": "spago -x example/example.dhall bundle-app --main Hooks.Main --to example/basic-hooks/app.js"
   }
 }

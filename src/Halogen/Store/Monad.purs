@@ -13,6 +13,7 @@ import Effect.Ref (Ref)
 import Effect.Ref as Ref
 import Halogen (HalogenM, hoist)
 import Halogen as H
+import Halogen.Hooks as Hooks
 import Halogen.Store.Select (Selector(..))
 import Halogen.Subscription (Emitter, Listener, makeEmitter)
 import Halogen.Subscription as HS
@@ -94,6 +95,11 @@ instance monadStoreStoreT :: MonadAff m => MonadStore a s (StoreT a s m) where
       coerceEmitter = unsafeCoerce
 
 instance monadStoreHalogenM :: MonadStore a s m => MonadStore a s (HalogenM st act slots out m) where
+  getStore = lift getStore
+  updateStore = lift <<< updateStore
+  emitSelected = lift <<< emitSelected
+
+instance monadStoreHookM :: MonadStore a s m => MonadStore a s (Hooks.HookM m) where
   getStore = lift getStore
   updateStore = lift <<< updateStore
   emitSelected = lift <<< emitSelected
