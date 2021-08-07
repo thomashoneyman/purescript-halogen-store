@@ -15,7 +15,7 @@ import ReduxTodo.Store as Store
 import ReduxTodo.Store.Visibility (Visibility, setVisibility)
 import Type.Proxy (Proxy(..))
 
-type Slot id slots = ( filterLink :: H.Slot (Const Void) Void id | slots )
+type Slot id slots = (filterLink :: H.Slot (Const Void) Void id | slots)
 
 filterLink
   :: forall action id slots m

@@ -14,7 +14,7 @@ import ReduxTodo.Store.Todos (createTodo)
 import Type.Proxy (Proxy(..))
 import Web.Event.Event (Event, preventDefault)
 
-type Slot id slots = ( addTodo :: H.Slot (Const Void) Void id | slots )
+type Slot id slots = (addTodo :: H.Slot (Const Void) Void id | slots)
 
 addTodo
   :: forall act slots m

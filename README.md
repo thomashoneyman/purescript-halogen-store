@@ -199,22 +199,27 @@ main = launchAff_ do
   runUI root unit body
 ```
 
-### Using store with hooks 
+### Using `halogen-store` with `halogen-hooks`
 
-If you want to write your component with [Halogen Hooks library](https://github.com/thomashoneyman/purescript-halogen-hooks) ,then you can use `useSelector` hook to access store. It takes selector and return the part of current store retrieved via given selector. 
+If you want to write your component with [Halogen Hooks](https://github.com/thomashoneyman/purescript-halogen-hooks) ,then you can use the `useSelector` hook to access the store.
 
 ```purs
-import Halogen.Hooks as Hooks
-import Halogen.Store.Hooks (useSelector)
-import Halogen.Store.Select (selectAll)
+module Main where
 
-component :: forall q i o m
-           . MonadStore BS.Action BS.Store m
-          => H.Component q i o m
+import Prelude
+
+import Halogen.Hooks as Hooks
+import Halogen.Store.Select (selectAll)
+import Halogen.Store.UseSelector (useSelector)
+
+component
+  :: forall q i o m
+   . MonadStore BS.Action BS.Store m
+  => H.Component q i o m
 component = Hooks.component \_ _ -> Hooks.do
-  ctx <- useSelector selectAll 
+  context <- useSelector selectAll
   Hooks.pure do
     ...
 ```
 
-Unlike the case with connect, though, context returned by `useSelector` hook has type `Maybe store`, because the hook does not have access to store before it has been initialized. 
+Unlike `connect`, the context returned by `useSelector` has the type `Maybe store` because the hook does not have access to the store before it is initialized.

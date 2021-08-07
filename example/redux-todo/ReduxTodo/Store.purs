@@ -1,6 +1,5 @@
 module ReduxTodo.Store where
 
-
 import Data.Variant (Variant)
 import Data.Variant as Variant
 import ReduxTodo.Store.Todos as Todos

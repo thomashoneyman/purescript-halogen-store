@@ -41,7 +41,7 @@ component = connect selectCount $ H.mkComponent
     HH.div_
       [ HH.button
           [ HE.onClick \_ -> Increment ]
-          [ HH.text "Increment"]
+          [ HH.text "Increment" ]
       , HH.text $ " Count: " <> show count <> " "
       , HH.button
           [ HE.onClick \_ -> Decrement ]

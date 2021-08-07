@@ -85,7 +85,7 @@ connect (Selector selector) component =
     Update newContext ->
       H.gets _.context >>= case _ of
         Just oldContext | unsafeRefEq oldContext newContext -> pure unit
-        _ -> H.modify_ _ { context = Just newContext}
+        _ -> H.modify_ _ { context = Just newContext }
 
     Raise output ->
       H.raise output
