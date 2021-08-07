@@ -19,7 +19,7 @@ import ReduxTodo.Store.Todos (Todo, toggleTodo)
 import ReduxTodo.Store.Visibility (Visibility(..))
 import Type.Proxy (Proxy(..))
 
-type Slot id slots = ( todoList :: H.Slot (Const Void) Void id | slots )
+type Slot id slots = (todoList :: H.Slot (Const Void) Void id | slots)
 
 todoList
   :: forall action slots m

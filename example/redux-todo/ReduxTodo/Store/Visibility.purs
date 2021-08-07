@@ -41,7 +41,7 @@ reduce store = case _ of
   SetVisibility visibility ->
     store { visibility = visibility }
 
-type Action' v = ( visibility :: Action | v )
+type Action' v = (visibility :: Action | v)
 
 injAction :: forall v. Action -> Variant (Action' v)
 injAction = Variant.inj (Proxy :: Proxy "visibility")

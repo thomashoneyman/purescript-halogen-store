@@ -1,4 +1,4 @@
-module Halogen.Store.Hooks.UseSelector where
+module Halogen.Store.UseSelector where
 
 import Prelude
 
@@ -14,13 +14,13 @@ foreign import data UseSelector :: Type -> Type -> Type -> Hooks.HookType
 type UseSelector' :: Type -> Type -> Type -> Hooks.HookType
 type UseSelector' act store ctx = UseState (Maybe ctx) <> UseEffect <> Hooks.Pure
 
-instance newtypeUseSelector
-  :: HookNewtype (UseSelector act store ctx) (UseSelector' act store ctx)
+instance HookNewtype (UseSelector act store ctx) (UseSelector' act store ctx)
 
-useSelector :: forall m act store ctx
-             . MonadStore act store m
-            => Selector store ctx
-            -> Hook m (UseSelector act store ctx) (Maybe ctx)
+useSelector
+  :: forall m act store ctx
+   . MonadStore act store m
+  => Selector store ctx
+  -> Hook m (UseSelector act store ctx) (Maybe ctx)
 useSelector (Selector selector) = Hooks.wrap hook
   where
   hook :: Hook m (UseSelector' act store ctx) (Maybe ctx)
@@ -29,7 +29,7 @@ useSelector (Selector selector) = Hooks.wrap hook
 
     Hooks.useLifecycleEffect do
       emitter <- emitSelected (Selector selector)
-      subscriptionId <- Hooks.subscribe $ map (Hooks.put ctxId <<< Just) emitter 
+      subscriptionId <- Hooks.subscribe $ map (Hooks.put ctxId <<< Just) emitter
       pure $ Just $ Hooks.unsubscribe subscriptionId
-      
+
     Hooks.pure ctx

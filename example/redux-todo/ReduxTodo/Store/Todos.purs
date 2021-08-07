@@ -51,7 +51,7 @@ reduce store = case _ of
 
     store { todos = newTodos }
 
-type Action' v = ( todos :: Action | v )
+type Action' v = (todos :: Action | v)
 
 injAction :: forall v. Action -> Variant (Action' v)
 injAction = Variant.inj (Proxy :: Proxy "todos")
