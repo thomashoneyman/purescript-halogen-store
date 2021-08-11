@@ -14,23 +14,25 @@ import Halogen.Store.Select (Selector, selectEq)
 
 type Input = Unit
 
+type Context = Int
+
 type State = Int
 
-selectState :: Selector NAS.Store Int
+selectState :: Selector NAS.Store Context
 selectState = selectEq _.count
 
-deriveState :: Connected Int Input -> State
+deriveState :: Connected Context Input -> State
 deriveState { context } = context
 
 data Action
   = Increment
   | Decrement
-  | Receive (Connected Int Input)
+  | Receive (Connected Context Input)
 
 component
-  :: forall q o m
+  :: forall query output m
    . MonadStore NAS.Action NAS.Store m
-  => H.Component q Unit o m
+  => H.Component query Input output m
 component = connect selectState $ H.mkComponent
   { initialState: deriveState
   , render

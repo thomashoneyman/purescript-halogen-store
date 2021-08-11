@@ -13,9 +13,9 @@ import Halogen.Store.Select (selectEq)
 import Halogen.Store.UseSelector (useSelector)
 
 component
-  :: forall q i o m
+  :: forall query input output m
    . MonadStore BS.Action BS.Store m
-  => H.Component q i o m
+  => H.Component query input output m
 component = Hooks.component \_ _ -> Hooks.do
   count <- useSelector $ selectEq _.count
   Hooks.pure do

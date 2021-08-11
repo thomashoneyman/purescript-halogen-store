@@ -27,9 +27,9 @@ data Action
   | HandleSubmit Event
 
 component
-  :: forall q i o m
+  :: forall query input output m
    . MonadStore Store.Action Store.Store m
-  => H.Component q i o m
+  => H.Component query input output m
 component = H.mkComponent
   { initialState: const ""
   , render
