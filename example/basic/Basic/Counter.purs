@@ -29,7 +29,7 @@ deriveState { context } = context
 selectCount :: Selector BS.Store Context
 selectCount = selectEq _.count
 
-component 
+component
   :: forall query output m
    . MonadStore BS.Action BS.Store m
   => H.Component query Input output m
