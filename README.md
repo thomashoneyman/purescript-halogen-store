@@ -122,9 +122,9 @@ data Action
   = Receive (Connected BS.Store Input)
 
 component
-  :: forall q i o m
+  :: forall query input output m
    . MonadStore BS.Action BS.Store m
-  => H.Component q i o m
+  => H.Component query input output m
 component = connect selectAll $ H.mkComponent
   { initialState: deriveState
   , render: \{ count } -> ...
@@ -149,20 +149,22 @@ Imagine that our store actually contained dozens of fields in addition to the `c
 import Halogen.Store.Select (Selector, selectEq)
 
 -- We are no longer connected to the entire store; we're only connected to
--- the `count` field, which is of type `Int`.
-deriveState :: Connected Int Input -> State
+-- the `count` field, which is of type `Int` for our new context.
+type Context = Int
+
+deriveState :: Connected Context Input -> State
 deriveState { context, input } = { count: context }
 
-selectCount :: Selector BS.Store Int
+selectCount :: Selector BS.Store Context
 selectCount = selectEq \store -> store.count
 
 data Action
-  = Receive (Connected Int Input)
+  = Receive (Connected Context Input)
 
 component
-  :: forall q i o m
+  :: forall query input output m
    . MonadStore BS.Action BS.Store m
-  => H.Component q i o m
+  => H.Component query input output m
 component = connect selectCount $ H.mkComponent
   { initialState: deriveState
   , ...

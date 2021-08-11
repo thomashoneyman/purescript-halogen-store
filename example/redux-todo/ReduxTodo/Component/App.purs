@@ -12,9 +12,9 @@ import ReduxTodo.Store as Store
 import ReduxTodo.Store.Visibility (Visibility(..))
 
 app
-  :: forall q i o m
+  :: forall query input output m
    . MonadStore Store.Action Store.Store m
-  => H.Component q i o m
+  => H.Component query input output m
 app = H.mkComponent
   { initialState: identity
   , render

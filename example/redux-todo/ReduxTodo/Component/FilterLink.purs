@@ -28,15 +28,17 @@ filterLink id = HH.slot_ (Proxy :: Proxy "filterLink") id component
 
 type Input = Visibility
 
+type Context = Visibility
+
 type State =
   { filter :: Visibility
   , active :: Boolean
   }
 
-selectState :: Selector Store.Store Visibility
+selectState :: Selector Store.Store Context
 selectState = selectEq _.visibility.visibility
 
-deriveState :: Connected Visibility Input -> State
+deriveState :: Connected Context Input -> State
 deriveState { context, input } =
   { filter: input
   , active: input == context
@@ -44,12 +46,12 @@ deriveState { context, input } =
 
 data Action
   = HandleClick
-  | Receive (Connected Visibility Visibility)
+  | Receive (Connected Context Input)
 
 component
-  :: forall q o m
+  :: forall query output m
    . MonadStore Store.Action Store.Store m
-  => H.Component q Input o m
+  => H.Component query Input output m
 component = connect selectState $ H.mkComponent
   { initialState: deriveState
   , render

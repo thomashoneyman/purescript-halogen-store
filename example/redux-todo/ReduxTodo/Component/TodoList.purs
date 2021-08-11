@@ -27,9 +27,11 @@ todoList
   => H.ComponentHTML action (Slot Unit slots) m
 todoList = HH.slot_ (Proxy :: Proxy "todoList") unit component unit
 
+type Context = Array Todo
+
 type State = Array Todo
 
-selectState :: Selector Store.Store (Array Todo)
+selectState :: Selector Store.Store Context
 selectState = selectEq \store -> case store.visibility.visibility of
   All ->
     store.todos.todos
@@ -38,17 +40,17 @@ selectState = selectEq \store -> case store.visibility.visibility of
   Active ->
     Array.filter (not _.completed) store.todos.todos
 
-deriveState :: Connected (Array Todo) Unit -> State
+deriveState :: Connected Context Unit -> State
 deriveState { context: todos } = todos
 
 data Action
   = ToggleTodo Int
-  | Receive (Connected (Array Todo) Unit)
+  | Receive (Connected Context Unit)
 
 component
-  :: forall q o m
+  :: forall query output m
    . MonadStore Store.Action Store.Store m
-  => H.Component q Unit o m
+  => H.Component query Unit output m
 component = connect selectState $ H.mkComponent
   { initialState: deriveState
   , render
