@@ -86,7 +86,7 @@ The `MonadStore` class provides three methods:
 2. `updateStore` applies an action to the store to produce a new store, using our reducer.
 3. `emitSelected` produces an `Emitter` from the `halogen-subscriptions` library that will notify subscribers of the store's new value when it changes.
 
-We can now use these methods anywhere we write `HalogenM` code -- for instanec, in our `handleAction` function:
+We can now use these methods anywhere we write `HalogenM` code -- for instance, in our `handleAction` function:
 
 ```purs
 import Basic.Store as BS
