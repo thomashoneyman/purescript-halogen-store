@@ -2,6 +2,7 @@ module Halogen.Store.Monad where
 
 import Prelude
 
+import Control.Monad.Error.Class (class MonadError, class MonadThrow)
 import Control.Monad.Reader (class MonadAsk, ReaderT, ask, lift, runReaderT)
 import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..))
@@ -53,6 +54,8 @@ derive newtype instance monadStoreT :: Monad m => Monad (StoreT a s m)
 derive newtype instance monadAskStoreT :: Monad m => MonadAsk (HalogenStore a s) (StoreT a s m)
 derive newtype instance monadEffectStoreT :: MonadEffect m => MonadEffect (StoreT a s m)
 derive newtype instance monadAffStoreT :: MonadAff m => MonadAff (StoreT a s m)
+derive newtype instance monadThrowStoreT :: MonadThrow e m => MonadThrow e (StoreT a s m)
+derive newtype instance monadErrorStoreT :: MonadError e m => MonadError e (StoreT a s m)
 
 instance monadStoreStoreT :: MonadAff m => MonadStore a s (StoreT a s m) where
   getStore = StoreT do
