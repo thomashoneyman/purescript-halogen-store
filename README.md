@@ -73,6 +73,7 @@ A connected component requires a `MonadStore` constraint which specifies the sto
 
 ```purs
 import Basic.Store as BS
+import Halogen.Store.Monad (class MonadStore)
 
 component
   :: forall q i o m
