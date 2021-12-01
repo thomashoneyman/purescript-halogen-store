@@ -33,8 +33,7 @@ initialStore =
   { visibility: All
   }
 
-data Action
-  = SetVisibility Visibility
+data Action = SetVisibility Visibility
 
 reduce :: Store -> Action -> Store
 reduce store = case _ of
