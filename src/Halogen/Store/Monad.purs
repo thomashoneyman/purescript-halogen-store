@@ -46,18 +46,20 @@ type HalogenStore a s =
 newtype StoreT :: Type -> Type -> (Type -> Type) -> Type -> Type
 newtype StoreT a s m b = StoreT (ReaderT (HalogenStore a s) m b)
 
-derive newtype instance functorStoreT :: Functor m => Functor (StoreT a s m)
-derive newtype instance applyStoreT :: Apply m => Apply (StoreT a s m)
-derive newtype instance applicativeStoreT :: Applicative m => Applicative (StoreT a s m)
-derive newtype instance bindStoreT :: Bind m => Bind (StoreT a s m)
-derive newtype instance monadStoreT :: Monad m => Monad (StoreT a s m)
-derive newtype instance monadAskStoreT :: Monad m => MonadAsk (HalogenStore a s) (StoreT a s m)
-derive newtype instance monadEffectStoreT :: MonadEffect m => MonadEffect (StoreT a s m)
-derive newtype instance monadAffStoreT :: MonadAff m => MonadAff (StoreT a s m)
-derive newtype instance monadThrowStoreT :: MonadThrow e m => MonadThrow e (StoreT a s m)
-derive newtype instance monadErrorStoreT :: MonadError e m => MonadError e (StoreT a s m)
+derive newtype instance Functor m => Functor (StoreT a s m)
+derive newtype instance Apply m => Apply (StoreT a s m)
+derive newtype instance Applicative m => Applicative (StoreT a s m)
+derive newtype instance Bind m => Bind (StoreT a s m)
+derive newtype instance Monad m => Monad (StoreT a s m)
+derive newtype instance MonadEffect m => MonadEffect (StoreT a s m)
+derive newtype instance MonadAff m => MonadAff (StoreT a s m)
+derive newtype instance MonadThrow e m => MonadThrow e (StoreT a s m)
+derive newtype instance MonadError e m => MonadError e (StoreT a s m)
 
-instance monadStoreStoreT :: MonadAff m => MonadStore a s (StoreT a s m) where
+instance MonadEffect m => MonadAsk s (StoreT a s m) where
+  ask = getStore
+
+instance MonadEffect m => MonadStore a s (StoreT a s m) where
   getStore = StoreT do
     store <- ask
     liftEffect do
