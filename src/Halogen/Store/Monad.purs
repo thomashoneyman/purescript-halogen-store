@@ -3,7 +3,7 @@ module Halogen.Store.Monad where
 import Prelude
 
 import Control.Monad.Error.Class (class MonadError, class MonadThrow)
-import Control.Monad.Reader (class MonadAsk, ReaderT, ask, lift, runReaderT)
+import Control.Monad.Reader (class MonadAsk, ReaderT, ask, lift, mapReaderT, runReaderT)
 import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
@@ -135,3 +135,7 @@ runStoreT initialStore reducer component = do
     { emitter, listener } <- HS.create
     pure { value, emitter, listener, reducer }
   pure $ hoist (\(StoreT m) -> runReaderT m hs) component
+
+-- | Change the type of the result in a `StoreT` monad.
+mapStoreT :: forall a s m1 m2 b c. (m1 b -> m2 c) -> StoreT a s m1 b -> StoreT a s m2 c
+mapStoreT f (StoreT m) = StoreT (mapReaderT f m)
