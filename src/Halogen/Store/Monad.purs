@@ -4,21 +4,16 @@ import Prelude
 
 import Control.Monad.Error.Class (class MonadError, class MonadThrow)
 import Control.Monad.Reader (class MonadAsk, ReaderT, ask, lift, mapReaderT, runReaderT)
-import Data.Foldable (traverse_)
-import Data.Maybe (Maybe(..))
-import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect, liftEffect)
-import Effect.Ref (Ref)
-import Effect.Ref as Ref
 import Halogen (HalogenM, hoist)
 import Halogen as H
 import Halogen.Hooks as Hooks
-import Halogen.Store.Select (Selector(..))
-import Halogen.Subscription (Emitter, Listener, makeEmitter)
-import Halogen.Subscription as HS
-import Unsafe.Coerce (unsafeCoerce)
+import Halogen.Store.Core (HalogenStore)
+import Halogen.Store.Core as Core
+import Halogen.Store.Select (Selector)
+import Halogen.Subscription (Emitter)
 
 -- | The `MonadStore` class captures monads which implement a stored value,
 -- | along with methods to get, update (via an action type, `a`), or subscribe
@@ -30,13 +25,6 @@ class MonadEffect m <= MonadStore a s m | m -> s a where
   getStore :: m s
   updateStore :: a -> m Unit
   emitSelected :: forall s'. Selector s s' -> m (Emitter s')
-
-type HalogenStore a s =
-  { value :: Ref s
-  , emitter :: Emitter s
-  , listener :: Listener s
-  , reducer :: s -> a -> s
-  }
 
 -- | The `StoreT` monad transformer is the standard way to use the `MonadStore`
 -- | class. It extends the base monad with a global action `a` used to update
@@ -56,55 +44,28 @@ derive newtype instance MonadAff m => MonadAff (StoreT a s m)
 derive newtype instance MonadThrow e m => MonadThrow e (StoreT a s m)
 derive newtype instance MonadError e m => MonadError e (StoreT a s m)
 
-instance MonadEffect m => MonadAsk s (StoreT a s m) where
-  ask = getStore
-
 instance MonadEffect m => MonadStore a s (StoreT a s m) where
   getStore = StoreT do
     store <- ask
-    liftEffect do
-      Ref.read store.value
+    liftEffect $ Core.getStore store
 
   updateStore action = StoreT do
     store <- ask
-    liftEffect do
-      current <- Ref.read store.value
-      let newStore = store.reducer current action
-      Ref.write newStore store.value
-      HS.notify store.listener newStore
+    liftEffect $ Core.updateStore store action
 
-  emitSelected (Selector selector) = StoreT do
+  emitSelected selector = StoreT do
     store <- ask
-    liftEffect do
-      init <- Ref.read store.value
-      prevRef <- Ref.new (selector.select init)
-      pure $ filterEmitter store.emitter \new -> do
-        prevDerived <- Ref.read prevRef
-        let newDerived = selector.select new
-        if selector.eq prevDerived newDerived then
-          pure Nothing
-        else do
-          liftEffect $ Ref.write newDerived prevRef
-          pure (Just newDerived)
-    where
-    filterEmitter :: forall x y. Emitter x -> (x -> Effect (Maybe y)) -> Emitter y
-    filterEmitter emitter predicate = do
-      let e = coerceEmitter emitter
-      makeEmitter \k -> e \a -> predicate a >>= traverse_ k
-      where
-      -- Behaves as `coerce`, but because `Emitter` doesn't export its
-      -- constructor we have to use `unsafeCoerce`. This isn't as unsafe as it
-      -- appears at first: if the definition of `Emitter` changes, then the call
-      -- to `makeEmitter` above will fail to compile.
-      coerceEmitter :: Emitter x -> ((x -> Effect Unit) -> Effect (Effect Unit))
-      coerceEmitter = unsafeCoerce
+    liftEffect $ Core.emitSelected store selector
 
-instance monadStoreHalogenM :: MonadStore a s m => MonadStore a s (HalogenM st act slots out m) where
+instance MonadEffect m => MonadAsk s (StoreT a s m) where
+  ask = getStore
+
+instance MonadStore a s m => MonadStore a s (HalogenM st act slots out m) where
   getStore = lift getStore
   updateStore = lift <<< updateStore
   emitSelected = lift <<< emitSelected
 
-instance monadStoreHookM :: MonadStore a s m => MonadStore a s (Hooks.HookM m) where
+instance MonadStore a s m => MonadStore a s (Hooks.HookM m) where
   getStore = lift getStore
   updateStore = lift <<< updateStore
   emitSelected = lift <<< emitSelected
@@ -132,10 +93,7 @@ runStoreT
   -> H.Component q i o (StoreT a s m)
   -> Aff (H.Component q i o m)
 runStoreT initialStore reducer component = do
-  hs <- liftEffect do
-    value <- Ref.new initialStore
-    { emitter, listener } <- HS.create
-    pure { value, emitter, listener, reducer }
+  hs <- liftEffect $ Core.newStore initialStore reducer
   pure $ hoist (\(StoreT m) -> runReaderT m hs) component
 
 -- | Change the type of the result in a `StoreT` monad.

@@ -9,8 +9,10 @@
   , "maybe"
   , "prelude"
   , "refs"
+  , "run"
   , "transformers"
   , "tuples"
+  , "typelevel-prelude"
   , "unsafe-coerce"
   , "unsafe-reference"
   ]
