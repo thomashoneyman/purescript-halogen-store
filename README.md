@@ -24,7 +24,9 @@ Writing applications with `halogen-store` comes down to three major steps, detai
 2. [Using the store](#using-the-store)
 3. [Running the application](#running-the-application)
 
-### Creating the store
+### Setup
+
+In order for the store to work a few data types and functions need to be defined.
 
 First, we should create a central state for our application. This is called a "store" by convention.
 
@@ -65,11 +67,13 @@ reduce store k = k store
 
 This lets you write arbitrary `store -> store` functions and send them to your central state.
 
-### Using the store
+### Enabling the store for a halogen component
 
-We can now use our store in our Halogen components. A component with access to the central store is called a "connected" component; a connected component can read, update, and subscribe to the store.
+To use the store with a halogen component we need to do two things.
+1. run the store monad using `runStoreT`, this will be discussed in the section "Running the application"
+2. put the `MonadStore` constraint on our component
 
-A connected component requires a `MonadStore` constraint which specifies the store, action, and underlying monad types. We already defined our store and action types in the `Basic.Store` module, so we can reuse that in our component definition:
+The `MonadStore` type class takes `Action`, `Store` and the underlying monad (such as `Aff`) as it's type parameters. Let's use the store and action types from the `Basic.Store` module which were previously defined.
 
 ```purs
 import Basic.Store as BS
@@ -80,6 +84,8 @@ component
    . MonadStore BS.Action BS.Store m
   => H.Component q i o m
 ```
+
+### Letting a halogen component re-render on store changes
 
 The `MonadStore` class provides three methods:
 
@@ -99,11 +105,20 @@ handleAction = case _ of
     updateStore BS.Increment
 ```
 
-In practice it's common to send actions to the store with `updateStore`, but it's somewhat rare to use `getStore` or `emitSelected`. That's because there's an easy way to subscribe a component to the store and always keep its state in sync with the central store: the `connect` function.
+Remember from the [halogen guide](https://purescript-halogen.github.io/purescript-halogen/guide/05-Parent-Child-Components.html#input) we can use a component's input to automatically re-render the component. We could in theory change the input in a parent component after being notified by the store that there is a new value. However this library does not expose the store value outside of the `MonadStore` enabled code.
 
-A component that uses `connect` function will receive the central state as part of its component input. That means it can use the central state with `initialState` and stay subscribed to all future state updates via the receiver. This is the easiest way to stay in sync with the store over time.
+Instead the library provides a function `connect` which under the hood wraps the component in a another component that can access the store. This other component is transparent for the user of this library and provides automatic new input to the child component on store changes. Because of this automatic connection to input, the functions `emitSelected` and `getStore` are rarely used. You will be mostly working with `updateStore`.
 
-For example, the component below will receive the store's current value when it initializes and will receive the store's new value each time it changes:
+The original input to your component is still available, but is wrapped into a record. 
+
+```
+{ context :: Maybe Action
+, initialized :: Boolean
+, input :: Input
+}
+```
+
+Component input is handled by the `receive :: input -> Maybe action` function. In the example below the component will receive the store and original input on initialization and also when either the store or the original input changes.
 
 ```purs
 import Basic.Store as BS
