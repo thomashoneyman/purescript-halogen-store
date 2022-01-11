@@ -2,8 +2,14 @@ module Halogen.Store.Monad where
 
 import Prelude
 
+import Control.Monad.Cont (class MonadCont)
 import Control.Monad.Error.Class (class MonadError, class MonadThrow)
-import Control.Monad.Reader (class MonadAsk, ReaderT, ask, lift, mapReaderT, runReaderT)
+import Control.Monad.Reader (class MonadAsk, class MonadReader, ReaderT(..), ask, local, lift, mapReaderT, runReaderT)
+import Control.Monad.Rec.Class (class MonadRec)
+import Control.Monad.State (class MonadState)
+import Control.Monad.Trans.Class (class MonadTrans)
+import Control.Monad.Writer (class MonadTell, class MonadWriter)
+import Data.Distributive (class Distributive)
 import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
@@ -55,9 +61,19 @@ derive newtype instance MonadEffect m => MonadEffect (StoreT a s m)
 derive newtype instance MonadAff m => MonadAff (StoreT a s m)
 derive newtype instance MonadThrow e m => MonadThrow e (StoreT a s m)
 derive newtype instance MonadError e m => MonadError e (StoreT a s m)
+derive newtype instance MonadTell w m => MonadTell w (StoreT a s m)
+derive newtype instance MonadWriter w m => MonadWriter w (StoreT a s m)
+derive newtype instance MonadState s m => MonadState s (StoreT a s m)
+derive newtype instance MonadCont m => MonadCont (StoreT a s m)
+derive newtype instance MonadRec m => MonadRec (StoreT a s m)
+derive newtype instance Distributive g => Distributive (StoreT a s g)
+derive newtype instance MonadTrans (StoreT a s)
 
-instance MonadEffect m => MonadAsk s (StoreT a s m) where
-  ask = getStore
+instance MonadAsk r m => MonadAsk r (StoreT a s m) where
+  ask = lift ask
+
+instance MonadReader r m => MonadReader r (StoreT a s m) where
+  local f (StoreT (ReaderT r)) = StoreT $ ReaderT $ local f <<< r
 
 instance MonadEffect m => MonadStore a s (StoreT a s m) where
   getStore = StoreT do
