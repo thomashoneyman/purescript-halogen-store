@@ -2,13 +2,17 @@ module Halogen.Store.Monad where
 
 import Prelude
 
-import Control.Monad.Cont (class MonadCont)
+import Control.Monad.Cont (class MonadCont, ContT)
 import Control.Monad.Error.Class (class MonadError, class MonadThrow)
-import Control.Monad.Reader (class MonadAsk, class MonadReader, ReaderT(..), ask, local, lift, mapReaderT, runReaderT)
+import Control.Monad.Except (ExceptT)
+import Control.Monad.Identity.Trans (IdentityT)
+import Control.Monad.Maybe.Trans (MaybeT)
+import Control.Monad.RWS (RWST)
+import Control.Monad.Reader (class MonadAsk, class MonadReader, ReaderT(..), ask, lift, local, mapReaderT, runReaderT)
 import Control.Monad.Rec.Class (class MonadRec)
-import Control.Monad.State (class MonadState)
+import Control.Monad.State (class MonadState, StateT)
 import Control.Monad.Trans.Class (class MonadTrans)
-import Control.Monad.Writer (class MonadTell, class MonadWriter)
+import Control.Monad.Writer (class MonadTell, class MonadWriter, WriterT)
 import Data.Distributive (class Distributive)
 import Data.Foldable (traverse_)
 import Data.Maybe (Maybe(..))
@@ -121,6 +125,46 @@ instance monadStoreHalogenM :: MonadStore a s m => MonadStore a s (HalogenM st a
   emitSelected = lift <<< emitSelected
 
 instance monadStoreHookM :: MonadStore a s m => MonadStore a s (Hooks.HookM m) where
+  getStore = lift getStore
+  updateStore = lift <<< updateStore
+  emitSelected = lift <<< emitSelected
+
+instance MonadStore a s m => MonadStore a s (ContT r m) where
+  getStore = lift getStore
+  updateStore = lift <<< updateStore
+  emitSelected = lift <<< emitSelected
+
+instance MonadStore a s m => MonadStore a s (ExceptT e m) where
+  getStore = lift getStore
+  updateStore = lift <<< updateStore
+  emitSelected = lift <<< emitSelected
+
+instance MonadStore a s m => MonadStore a s (IdentityT m) where
+  getStore = lift getStore
+  updateStore = lift <<< updateStore
+  emitSelected = lift <<< emitSelected
+
+instance MonadStore a s m => MonadStore a s (MaybeT m) where
+  getStore = lift getStore
+  updateStore = lift <<< updateStore
+  emitSelected = lift <<< emitSelected
+
+instance (MonadStore a s m, Monoid w) => MonadStore a s (RWST r w s m) where
+  getStore = lift getStore
+  updateStore = lift <<< updateStore
+  emitSelected = lift <<< emitSelected
+
+instance MonadStore a s m => MonadStore a s (ReaderT r m) where
+  getStore = lift getStore
+  updateStore = lift <<< updateStore
+  emitSelected = lift <<< emitSelected
+
+instance MonadStore a s m => MonadStore a s (StateT s m) where
+  getStore = lift getStore
+  updateStore = lift <<< updateStore
+  emitSelected = lift <<< emitSelected
+
+instance (MonadStore a s m, Monoid w) => MonadStore a s (WriterT w m) where
   getStore = lift getStore
   updateStore = lift <<< updateStore
   emitSelected = lift <<< emitSelected
