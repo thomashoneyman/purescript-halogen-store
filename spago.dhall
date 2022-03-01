@@ -1,6 +1,7 @@
 { name = "halogen-store"
 , dependencies =
   [ "aff"
+  , "distributive"
   , "effect"
   , "foldable-traversable"
   , "halogen"
@@ -9,6 +10,7 @@
   , "maybe"
   , "prelude"
   , "refs"
+  , "tailrec"
   , "transformers"
   , "tuples"
   , "unsafe-coerce"
