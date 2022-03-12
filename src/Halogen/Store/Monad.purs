@@ -185,12 +185,57 @@ runStoreT
   -> (s -> a -> s)
   -> H.Component q i o (StoreT a s m)
   -> Aff (H.Component q i o m)
-runStoreT initialStore reducer component = do
+runStoreT initialStore reducer component =
+  _.root <$> runAndEmitStoreT initialStore reducer component
+
+-- | Run a component in the `StoreT` monad.
+-- |
+-- | Requires an initial value for the store, `s`, and a reducer that updates
+-- | the store in response to an action, `a`.
+-- |
+-- | This can be used directly on the root component of your application to
+-- | produce a component that Halogen can run, so long as the base monad can
+-- | be fixed to `Aff`.
+-- |
+-- | Returns a component that can be run with `runUI` and an emitter with can
+-- | be used subscribe to updates from the store. This can be used, for
+-- | example, to persist parts of the store to local storage or some other
+-- | persistence mechanism, allowing you to push these concerns to the
+-- | boundaries of the application, outside of the component.
+-- |
+-- | ```purs
+-- | main = do
+-- |   persistedField1 <- LocalStorage.getItem "myField1"
+-- |   ...
+-- |   persistedFieldN <- LocalStorage.getItem "myFieldN"
+-- |   let initialStore = mkStore persistedField1 ... persistedFieldN
+-- |   launchAff_ do
+-- |     body <- Halogen.Aff.awaitBody
+-- |     { storeEmitter, root } <- runAndEmitStoreT initialStore reducer rootComponent
+-- |     runUI root unit body
+-- |     void $ liftEffect $ HS.subscribe storeEmitter \store -> do
+-- |       -- for efficiency, you may wish to update fields only when they have
+-- |       -- changed.
+-- |       LocalStorage.setItem "myField1" store.persistedField1
+-- |       ...
+-- |       LocalStorage.setItem "myFieldN" store.persistedFieldN
+-- | ```
+runAndEmitStoreT
+  :: forall a s q i o m
+   . Monad m
+  => s
+  -> (s -> a -> s)
+  -> H.Component q i o (StoreT a s m)
+  -> Aff ({ storeEmitter :: Emitter s, root :: H.Component q i o m })
+runAndEmitStoreT initialStore reducer component = do
   hs <- liftEffect do
     value <- Ref.new initialStore
     { emitter, listener } <- HS.create
     pure { value, emitter, listener, reducer }
-  pure $ hoist (\(StoreT m) -> runReaderT m hs) component
+  pure
+    { storeEmitter: hs.emitter
+    , root: hoist (\(StoreT m) -> runReaderT m hs) component
+    }
 
 -- | Change the type of the result in a `StoreT` monad.
 mapStoreT :: forall a s m1 m2 b c. (m1 b -> m2 c) -> StoreT a s m1 b -> StoreT a s m2 c
