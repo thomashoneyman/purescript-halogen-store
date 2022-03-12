@@ -14,9 +14,6 @@ import Control.Monad.State (class MonadState, StateT)
 import Control.Monad.Trans.Class (class MonadTrans)
 import Control.Monad.Writer (class MonadTell, class MonadWriter, WriterT)
 import Data.Distributive (class Distributive)
-import Data.Foldable (traverse_)
-import Data.Maybe (Maybe(..))
-import Effect (Effect)
 import Effect.Aff (Aff)
 import Effect.Aff.Class (class MonadAff)
 import Effect.Class (class MonadEffect, liftEffect)
@@ -26,9 +23,8 @@ import Halogen (HalogenM, hoist)
 import Halogen as H
 import Halogen.Hooks as Hooks
 import Halogen.Store.Select (Selector(..))
-import Halogen.Subscription (Emitter, Listener, makeEmitter)
+import Halogen.Subscription (Emitter, Listener, makeEmitter, subscribe)
 import Halogen.Subscription as HS
-import Unsafe.Coerce (unsafeCoerce)
 
 -- | The `MonadStore` class captures monads which implement a stored value,
 -- | along with methods to get, update (via an action type, `a`), or subscribe
@@ -95,29 +91,27 @@ instance MonadEffect m => MonadStore a s (StoreT a s m) where
 
   emitSelected (Selector selector) = StoreT do
     store <- ask
-    liftEffect do
+    -- For each new subscriber
+    pure $ makeEmitter \subscriber -> do
+      -- Read the current value from the store and project it
       init <- Ref.read store.value
       prevRef <- Ref.new (selector.select init)
-      pure $ filterEmitter store.emitter \new -> do
+      -- Return a subscription to the emitter's store such that for each new
+      -- store value emitted...
+      pure <<< HS.unsubscribe =<< subscribe store.emitter \new -> do
+        -- we read the previous derived value,
         prevDerived <- Ref.read prevRef
+        -- compute the new one,
         let newDerived = selector.select new
+        -- and if they are equal,
         if selector.eq prevDerived newDerived then
-          pure Nothing
+          -- do nothing.
+          pure unit
         else do
+          -- otherwise, we update the ref for the next update
           liftEffect $ Ref.write newDerived prevRef
-          pure (Just newDerived)
-    where
-    filterEmitter :: forall x y. Emitter x -> (x -> Effect (Maybe y)) -> Emitter y
-    filterEmitter emitter predicate = do
-      let e = coerceEmitter emitter
-      makeEmitter \k -> e \a -> predicate a >>= traverse_ k
-      where
-      -- Behaves as `coerce`, but because `Emitter` doesn't export its
-      -- constructor we have to use `unsafeCoerce`. This isn't as unsafe as it
-      -- appears at first: if the definition of `Emitter` changes, then the call
-      -- to `makeEmitter` above will fail to compile.
-      coerceEmitter :: Emitter x -> ((x -> Effect Unit) -> Effect (Effect Unit))
-      coerceEmitter = unsafeCoerce
+          -- and notify the subscriber.
+          subscriber newDerived
 
 instance monadStoreHalogenM :: MonadStore a s m => MonadStore a s (HalogenM st act slots out m) where
   getStore = lift getStore
