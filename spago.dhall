@@ -4,6 +4,7 @@
   , "distributive"
   , "effect"
   , "foldable-traversable"
+  , "fork"
   , "halogen"
   , "halogen-hooks"
   , "halogen-subscriptions"

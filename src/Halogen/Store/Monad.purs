@@ -5,6 +5,7 @@ import Prelude
 import Control.Monad.Cont (class MonadCont, ContT)
 import Control.Monad.Error.Class (class MonadError, class MonadThrow)
 import Control.Monad.Except (ExceptT)
+import Control.Monad.Fork.Class (class MonadBracket, class MonadFork, class MonadKill, bracket, kill, never, uninterruptible)
 import Control.Monad.Identity.Trans (IdentityT)
 import Control.Monad.Maybe.Trans (MaybeT)
 import Control.Monad.RWS (RWST)
@@ -66,6 +67,23 @@ derive newtype instance MonadWriter w m => MonadWriter w (StoreT a s m)
 derive newtype instance MonadState s m => MonadState s (StoreT a s m)
 derive newtype instance MonadCont m => MonadCont (StoreT a s m)
 derive newtype instance MonadRec m => MonadRec (StoreT a s m)
+derive newtype instance MonadFork f m => MonadFork f (StoreT a s m)
+
+-- Can't use generalized newtype deriving because it produces unverifiable
+-- superclass constraint warnings
+instance MonadKill e f m => MonadKill e f (StoreT a s m) where
+  kill e = lift <<< kill e
+
+-- Can't use generalized newtype deriving because it produces unverifiable
+-- superclass constraint warnings
+instance MonadBracket e f m => MonadBracket e f (StoreT a s m) where
+  bracket (StoreT acquire) release run = StoreT $ bracket
+    acquire
+    (\c a -> case release c a of StoreT r -> r)
+    (\a -> case run a of StoreT r -> r)
+  uninterruptible (StoreT r) = StoreT $ uninterruptible r
+  never = lift never
+
 derive newtype instance Distributive g => Distributive (StoreT a s g)
 derive newtype instance MonadTrans (StoreT a s)
 
