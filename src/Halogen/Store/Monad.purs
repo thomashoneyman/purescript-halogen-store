@@ -22,8 +22,8 @@ import Effect.Ref as Ref
 import Halogen (HalogenM, hoist)
 import Halogen as H
 import Halogen.Hooks as Hooks
-import Halogen.Store.Select (Selector(..))
-import Halogen.Subscription (Emitter, Listener, makeEmitter, subscribe)
+import Halogen.Store.Select (Selector, selectEmitter)
+import Halogen.Subscription (Emitter, Listener)
 import Halogen.Subscription as HS
 
 -- | The `MonadStore` class captures monads which implement a stored value,
@@ -89,29 +89,8 @@ instance MonadEffect m => MonadStore a s (StoreT a s m) where
       Ref.write newStore store.value
       HS.notify store.listener newStore
 
-  emitSelected (Selector selector) = StoreT do
-    store <- ask
-    -- For each new subscriber
-    pure $ makeEmitter \subscriber -> do
-      -- Read the current value from the store and project it
-      init <- Ref.read store.value
-      prevRef <- Ref.new (selector.select init)
-      -- Return a subscription to the emitter's store such that for each new
-      -- store value emitted...
-      pure <<< HS.unsubscribe =<< subscribe store.emitter \new -> do
-        -- we read the previous derived value,
-        prevDerived <- Ref.read prevRef
-        -- compute the new one,
-        let newDerived = selector.select new
-        -- and if they are equal,
-        if selector.eq prevDerived newDerived then
-          -- do nothing.
-          pure unit
-        else do
-          -- otherwise, we update the ref for the next update
-          liftEffect $ Ref.write newDerived prevRef
-          -- and notify the subscriber.
-          subscriber newDerived
+  emitSelected selector =
+    StoreT $ ReaderT $ pure <<< selectEmitter selector <<< _.emitter
 
 instance monadStoreHalogenM :: MonadStore a s m => MonadStore a s (HalogenM st act slots out m) where
   getStore = lift getStore
@@ -198,27 +177,30 @@ runStoreT initialStore reducer component =
 -- | be fixed to `Aff`.
 -- |
 -- | Returns a component that can be run with `runUI` and an emitter with can
--- | be used subscribe to updates from the store. This can be used, for
--- | example, to persist parts of the store to local storage or some other
--- | persistence mechanism, allowing you to push these concerns to the
--- | boundaries of the application, outside of the component.
+-- | be used to react to store changes. This can be used, for example, to
+-- | persist parts of the store to local storage or some other persistence
+-- | mechanism, allowing you to push these concerns to the boundaries of the
+-- | application, outside of the component.
 -- |
 -- | ```purs
 -- | main = do
--- |   persistedField1 <- LocalStorage.getItem "myField1"
+-- |   -- load initial store values from local storage.
+-- |   field1 <- LocalStorage.getItem "field1"
 -- |   ...
--- |   persistedFieldN <- LocalStorage.getItem "myFieldN"
--- |   let initialStore = mkStore persistedField1 ... persistedFieldN
+-- |   fieldN <- LocalStorage.getItem "fieldN"
+-- |   let initialStore = mkStore field1 ... fieldN
 -- |   launchAff_ do
 -- |     body <- Halogen.Aff.awaitBody
--- |     { storeEmitter, root } <- runAndEmitStoreT initialStore reducer rootComponent
+-- |     { emitter, root } <- runAndEmitStoreT initialStore reducer rootComponent
 -- |     runUI root unit body
--- |     void $ liftEffect $ HS.subscribe storeEmitter \store -> do
--- |       -- for efficiency, you may wish to update fields only when they have
--- |       -- changed.
--- |       LocalStorage.setItem "myField1" store.persistedField1
+-- |     let selectField1 = selectEq _.field1
+-- |     let selectFieldN = selectEq _.fieldN
+-- |     let subscribe_ = void <<< HS.subscribe
+-- |     liftEffect do
+-- |       -- save new store values to local storage as they change.
+-- |       subscribe_ $ selectEmitter selectField1 emitter $ LocalStorage.setItem "field1"
 -- |       ...
--- |       LocalStorage.setItem "myFieldN" store.persistedFieldN
+-- |       subscribe_ $ selectEmitter selectFieldN emitter $ LocalStorage.setItem "fieldN"
 -- | ```
 runAndEmitStoreT
   :: forall a s q i o m
@@ -226,14 +208,14 @@ runAndEmitStoreT
   => s
   -> (s -> a -> s)
   -> H.Component q i o (StoreT a s m)
-  -> Aff ({ storeEmitter :: Emitter s, root :: H.Component q i o m })
+  -> Aff ({ emitter :: Emitter s, root :: H.Component q i o m })
 runAndEmitStoreT initialStore reducer component = do
   hs <- liftEffect do
     value <- Ref.new initialStore
     { emitter, listener } <- HS.create
     pure { value, emitter, listener, reducer }
   pure
-    { storeEmitter: hs.emitter
+    { emitter: hs.emitter
     , root: hoist (\(StoreT m) -> runReaderT m hs) component
     }
 
