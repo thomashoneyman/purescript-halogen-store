@@ -21,6 +21,7 @@ in pkgs.stdenv.mkDerivation {
     pursPkgs.spago
     pursPkgs.psa
     pursPkgs.purs-tidy
+    pursPkgs.purescript-language-server
 
     pkgs.nodejs-16_x
   ];
