@@ -228,7 +228,7 @@ runAndEmitStoreT initialStore reducer component = do
     pure { value, emitter, listener, reducer }
   pure
     { emitter: hs.emitter
-    , root: hoist (\(StoreT m) -> runReaderT m hs) component
+    , component: hoist (\(StoreT m) -> runReaderT m hs) component
     }
 
 -- | Change the type of the result in a `StoreT` monad.
