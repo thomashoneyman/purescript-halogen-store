@@ -2,6 +2,10 @@ module Halogen.Store.Select where
 
 import Prelude
 
+import Data.Maybe (Maybe(..), maybe)
+import Effect.Ref as Ref
+import Halogen.Subscription (Emitter)
+import Halogen.Subscription as HS
 import Unsafe.Reference (unsafeRefEq)
 
 -- | A `Selector` represents a selection `a` from the store `store`. It is
@@ -29,3 +33,18 @@ selectEq = Selector <<< { eq, select: _ }
 -- | Create a `Selector` for the entire store.
 selectAll :: forall store. Selector store store
 selectAll = Selector { eq: unsafeRefEq, select: identity }
+
+-- | Apply a `Selector` to an `Emitter` so that the emitter only fires when the
+-- | selected value changes, as determined by the selector's equality function.
+selectEmitter :: forall store a. Selector store a -> Emitter store -> Emitter a
+selectEmitter (Selector selector) emitter =
+  HS.makeEmitter \push -> do
+    previousDerivedRef <- Ref.new Nothing
+    subscription <- HS.subscribe emitter \store -> do
+      previousDerived <- Ref.read previousDerivedRef
+      let newDerived = selector.select store
+      let isUnchanged = maybe false (selector.eq newDerived) previousDerived
+      unless isUnchanged do
+        Ref.write (Just newDerived) previousDerivedRef
+        push newDerived
+    pure $ HS.unsubscribe subscription
