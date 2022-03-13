@@ -183,7 +183,7 @@ runStoreT
   -> H.Component q i o (StoreT a s m)
   -> Aff (H.Component q i o m)
 runStoreT initialStore reducer component =
-  _.root <$> runAndEmitStoreT initialStore reducer component
+  _.component <$> runAndEmitStoreT initialStore reducer component
 
 -- | Run a component in the `StoreT` monad.
 -- |
@@ -203,22 +203,16 @@ runStoreT initialStore reducer component =
 -- | ```purs
 -- | main = do
 -- |   -- load initial store values from local storage.
--- |   field1 <- LocalStorage.getItem "field1"
--- |   ...
--- |   fieldN <- LocalStorage.getItem "fieldN"
--- |   let initialStore = mkStore field1 ... fieldN
+-- |   field <- LocalStorage.getItem "field"
+-- |   let initialStore = mkStore field
 -- |   launchAff_ do
 -- |     body <- Halogen.Aff.awaitBody
--- |     { emitter, root } <- runAndEmitStoreT initialStore reducer rootComponent
--- |     runUI root unit body
--- |     let selectField1 = selectEq _.field1
--- |     let selectFieldN = selectEq _.fieldN
--- |     let subscribe_ = void <<< HS.subscribe
+-- |     { emitter, component } <- runAndEmitStoreT initialStore reducer rootComponent
+-- |     runUI component unit body
+-- |     let selectField = selectEq _.field
 -- |     liftEffect do
--- |       -- save new store values to local storage as they change.
--- |       subscribe_ $ selectEmitter selectField1 emitter $ LocalStorage.setItem "field1"
--- |       ...
--- |       subscribe_ $ selectEmitter selectFieldN emitter $ LocalStorage.setItem "fieldN"
+-- |       -- save new store values to local storage as they change
+-- |       void $ H.subscribe $ selectEmitter selectField emitter $ LocalStorage.setItem "field"
 -- | ```
 runAndEmitStoreT
   :: forall a s q i o m
@@ -226,7 +220,7 @@ runAndEmitStoreT
   => s
   -> (s -> a -> s)
   -> H.Component q i o (StoreT a s m)
-  -> Aff ({ emitter :: Emitter s, root :: H.Component q i o m })
+  -> Aff ({ emitter :: Emitter s, component :: H.Component q i o m })
 runAndEmitStoreT initialStore reducer component = do
   hs <- liftEffect do
     value <- Ref.new initialStore

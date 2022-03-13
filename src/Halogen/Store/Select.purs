@@ -34,10 +34,8 @@ selectEq = Selector <<< { eq, select: _ }
 selectAll :: forall store. Selector store store
 selectAll = Selector { eq: unsafeRefEq, select: identity }
 
--- | Maps an `Emitter` using a `Selector`. The resulting `Emitter` will behave
--- | as if it were `map`ped with the `Selector`'s `select` function, with the
--- | exception that it will not fire multiple times in a row if the selected
--- | value has not changed (as determined by the `Selector`'s `eq` function).
+-- | Apply a `Selector` to an `Emitter` so that the emitter only fires when the
+-- | selected value changes, as determined by the selector's equality function.
 selectEmitter :: forall store a. Selector store a -> Emitter store -> Emitter a
 selectEmitter (Selector selector) emitter =
   HS.makeEmitter \push -> do
