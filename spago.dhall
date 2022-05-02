@@ -3,7 +3,6 @@
   [ "aff"
   , "distributive"
   , "effect"
-  , "foldable-traversable"
   , "fork"
   , "halogen"
   , "halogen-hooks"
@@ -14,7 +13,6 @@
   , "tailrec"
   , "transformers"
   , "tuples"
-  , "unsafe-coerce"
   , "unsafe-reference"
   ]
 , packages = ./packages.dhall

@@ -11,10 +11,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      
+
       - uses: purescript-contrib/setup-purescript@main
         with:
           purs-tidy: "latest"
+
+      - name: Install esbuild
+        run: npm install --global esbuild@0.14.38
 
       - name: Build source
         run: npm run build
