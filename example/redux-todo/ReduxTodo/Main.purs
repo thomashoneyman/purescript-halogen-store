@@ -14,4 +14,4 @@ main :: Effect Unit
 main = launchAff_ do
   body <- HA.awaitBody
   root <- runStoreT Store.initialStore Store.reduce app
-  runUI root unit body
+  void $ runUI root unit body

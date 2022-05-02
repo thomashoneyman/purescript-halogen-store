@@ -14,4 +14,4 @@ main :: Effect Unit
 main = launchAff_ do
   body <- HA.awaitBody
   root <- runStoreT NAS.initialStore (#) Counter.component
-  runUI root unit body
+  void $ runUI root unit body
