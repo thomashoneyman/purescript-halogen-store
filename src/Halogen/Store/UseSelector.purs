@@ -6,7 +6,7 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple.Nested ((/\))
 import Halogen.Hooks (class HookNewtype, type (<>), Hook, UseEffect, UseState)
 import Halogen.Hooks as Hooks
-import Halogen.Store.Monad (class MonadStore, emitSelected)
+import Halogen.Store.Monad (class MonadStore, emitSelected, getStore)
 import Halogen.Store.Select (Selector(..))
 
 foreign import data UseSelector :: Type -> Type -> Type -> Hooks.HookType
@@ -30,6 +30,8 @@ useSelector (Selector selector) = Hooks.wrap hook
     Hooks.useLifecycleEffect do
       emitter <- emitSelected (Selector selector)
       subscriptionId <- Hooks.subscribe $ map (Hooks.put ctxId <<< Just) emitter
+      initialCtx <- map selector.select getStore
+      Hooks.put ctxId $ Just initialCtx
       pure $ Just $ Hooks.unsubscribe subscriptionId
 
     Hooks.pure ctx
