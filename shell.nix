@@ -10,8 +10,8 @@ let
   pursPkgs = import (pkgs.fetchFromGitHub {
     owner = "justinwoo";
     repo = "easy-purescript-nix";
-    rev = "0ad5775c1e80cdd952527db2da969982e39ff592";
-    sha256 = "0x53ads5v8zqsk4r1mfpzf5913byifdpv5shnvxpgw634ifyj1kg";
+    rev = "5926981701ac781f08b02e31e4705e46b799299d";
+    sha256 = "03g9xq451dmrkq8kiz989wnl8k0lmj60ajflz44bhp7cm08hf3bw";
   }) { inherit pkgs; };
 
 in pkgs.stdenv.mkDerivation {
