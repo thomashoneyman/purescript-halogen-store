@@ -1,7 +1,7 @@
 let
   pkgs = import (builtins.fetchTarball {
-    url = "https://github.com/NixOS/nixpkgs/archive/21.11.tar.gz";
-  }) {};
+    url = "https://github.com/NixOS/nixpkgs/archive/22.05.tar.gz";
+  }) { };
 
   # To update to a newer version of easy-purescript-nix, run:
   # nix-prefetch-git https://github.com/justinwoo/easy-purescript-nix
@@ -17,7 +17,7 @@ let
 in pkgs.stdenv.mkDerivation {
   name = "halogen-store";
   buildInputs = with pursPkgs; [
-    pursPkgs.purs
+    pursPkgs.purs-0_15_4
     pursPkgs.spago
     pursPkgs.psa
     pursPkgs.purs-tidy
