@@ -4,7 +4,7 @@
 [![Latest release](http://img.shields.io/github/release/thomashoneyman/purescript-halogen-store.svg)](https://github.com/thomashoneyman/purescript-halogen-store/releases)
 [![Maintainer: thomashoneyman](https://img.shields.io/badge/maintainer-thomashoneyman-teal.svg)](http://github.com/thomashoneyman)
 
-Global state management for Halogen.
+Global state management for Halogen. For a Hooks-first state management library, please see [Helix](https://github.com/katsujukou/purescript-halogen-helix).
 
 ## Installation
 
