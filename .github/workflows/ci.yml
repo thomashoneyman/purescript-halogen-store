@@ -35,4 +35,4 @@ jobs:
         run: nix develop -c spago build
 
       - name: Verify formatting
-        run: nix develop -c purs-tidy check src example
+        run: nix develop -c purs-tidy check src example/basic example/basic-hooks example/basic-no-action example/redux-todo
