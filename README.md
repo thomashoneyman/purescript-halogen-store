@@ -14,6 +14,42 @@ Install `halogen-store` with Spago:
 spago install halogen-store
 ```
 
+## Development
+
+Use Node 24 (CI pins 24.21.0), then `npm ci` to install the pinned
+PureScript 0.15.15, Spago 1.0.4, esbuild, formatter, PSA and language server.
+Alternatively enter `nix-shell` first, then run the same npm commands.
+The npm compiler binary requires a supported host (such as glibc Linux).
+NixOS may need a native PureScript compiler; this shell has not been validated
+on NixOS.
+
+```sh
+npm ci
+npm run check
+```
+
+`check` builds the library and example workspace with dependency checking,
+bundles all four browser examples (including Hooks), and checks formatting.
+There is no automated test suite. Serve the `example` directory with a local
+HTTP server and open `basic/`, `basic-no-action/`, `basic-hooks/`, and
+`redux-todo/` to exercise the applications. Example modules live under
+`example/src`; HTML and generated bundles remain in their named directories.
+Individual bundles can be rebuilt with `npm run examples:basic` and the
+corresponding example script. Commit both `package-lock.json` and `spago.lock`.
+
+The language server's `uuid` dependency is overridden to 11.1.1 to address
+GHSA-w5hq-g745-h8pq; its UUID v4 use and LSP initialization were checked.
+`npm audit` still reports GHSA-vfj7-8cjw-p6xm in `braces` via Spago's
+`micromatch` dependency (three high-severity package entries, one advisory).
+No patched `braces` release is available at migration time. Do not apply
+the suggested Spago 0.93 downgrade to this Spago 1 workspace.
+
+Publication setup remains incomplete: the maintainer must choose an unused
+release version and approve an SSH public owner key or intentionally omit
+owners. The existing registry location is
+`thomashoneyman/purescript-halogen-store`, licensed MIT. No release or ownership
+change is implied by this development migration.
+
 ## Quick Start
 
 This library provides global state management for Halogen applications. A global or central state can help when many components need access to the same information, and threading those values through components via their inputs is either tedious or leads to an explosion of unnecessary fields in state.

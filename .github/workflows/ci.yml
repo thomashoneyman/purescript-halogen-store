@@ -5,25 +5,26 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
 
-      - uses: purescript-contrib/setup-purescript@main
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          purs-tidy: "latest"
+          node-version: '24.21.0'
+          cache: npm
 
-      - name: Install esbuild
-        run: npm install --global esbuild@0.14.38
+      - name: Install pinned development tools
+        run: npm ci
 
-      - name: Build source
-        run: npm run build
+      - name: Build source and all examples, verify formatting
+        run: npm run check
 
-      - name: Build examples
-        run: npm run examples
-
-      - name: Verify formatting
-        run: purs-tidy check src example
+      - name: Verify dependency locks remain unchanged
+        run: git diff --exit-code -- spago.yaml example/spago.yaml spago.lock package-lock.json

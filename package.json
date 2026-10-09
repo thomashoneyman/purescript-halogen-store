@@ -1,10 +1,29 @@
 {
+  "private": true,
+  "engines": {
+    "node": ">=24 <25"
+  },
   "scripts": {
     "build": "spago build -p halogen-store --pedantic-packages",
-    "examples": "npm run examples:basic && npm run examples:basic-no-action && npm run examples:redux-todo",
+    "check": "npm run build && spago build -p halogen-store-examples --pedantic-packages && npm run examples && npm run format:check",
+    "format:check": "purs-tidy check src example",
+    "examples": "npm run examples:basic && npm run examples:basic-no-action && npm run examples:redux-todo && npm run examples:basic-hooks",
     "examples:basic": "spago bundle -p halogen-store-examples --bundle-type app --platform browser --module Basic.Main --outfile basic/app.js",
     "examples:basic-no-action": "spago bundle -p halogen-store-examples --bundle-type app --platform browser --module NoAction.Main --outfile basic-no-action/app.js",
     "examples:redux-todo": "spago bundle -p halogen-store-examples --bundle-type app --platform browser --module ReduxTodo.Main --outfile redux-todo/app.js",
     "examples:basic-hooks": "spago bundle -p halogen-store-examples --bundle-type app --platform browser --module Hooks.Main --outfile basic-hooks/app.js"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "purescript": "0.15.15",
+    "purescript-language-server": "0.18.5",
+    "purescript-psa": "0.9.0",
+    "purs-tidy": "0.11.1",
+    "spago": "1.0.4"
+  },
+  "overrides": {
+    "purescript-language-server": {
+      "uuid": "11.1.1"
+    }
   }
 }
