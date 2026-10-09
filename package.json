@@ -5,8 +5,9 @@
   },
   "scripts": {
     "build": "spago build -p halogen-store --pedantic-packages",
-    "check": "npm run build && spago build -p halogen-store-examples --pedantic-packages && npm run examples && npm run format:check",
-    "format:check": "purs-tidy check src example",
+    "test": "spago test -p halogen-store --pedantic-packages",
+    "check": "npm run build && npm test && spago build -p halogen-store-examples --pedantic-packages && npm run examples && npm run format:check",
+    "format:check": "purs-tidy check src test example",
     "examples": "npm run examples:basic && npm run examples:basic-no-action && npm run examples:redux-todo && npm run examples:basic-hooks",
     "examples:basic": "spago bundle -p halogen-store-examples --bundle-type app --platform browser --module Basic.Main --outfile basic/app.js",
     "examples:basic-no-action": "spago bundle -p halogen-store-examples --bundle-type app --platform browser --module NoAction.Main --outfile basic-no-action/app.js",

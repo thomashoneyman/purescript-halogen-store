@@ -18,10 +18,7 @@ spago install halogen-store
 
 Use Node 24 (CI pins 24.21.0), then `npm ci` to install the pinned
 PureScript 0.15.15, Spago 1.0.4, esbuild, formatter, PSA and language server.
-Alternatively enter `nix-shell` first, then run the same npm commands.
 The npm compiler binary requires a supported host (such as glibc Linux).
-NixOS may need a native PureScript compiler; this shell has not been validated
-on NixOS.
 
 ```sh
 npm ci
@@ -29,8 +26,9 @@ npm run check
 ```
 
 `check` builds the library and example workspace with dependency checking,
-bundles all four browser examples (including Hooks), and checks formatting.
-There is no automated test suite. Serve the `example` directory with a local
+executes `npm test`, bundles all four browser examples (including Hooks), and
+checks formatting. `Test.Main` is a minimal runner smoke test, not library
+behavior coverage. Serve the `example` directory with a local
 HTTP server and open `basic/`, `basic-no-action/`, `basic-hooks/`, and
 `redux-todo/` to exercise the applications. Example modules live under
 `example/src`; HTML and generated bundles remain in their named directories.
@@ -43,12 +41,6 @@ GHSA-w5hq-g745-h8pq; its UUID v4 use and LSP initialization were checked.
 `micromatch` dependency (three high-severity package entries, one advisory).
 No patched `braces` release is available at migration time. Do not apply
 the suggested Spago 0.93 downgrade to this Spago 1 workspace.
-
-Publication setup remains incomplete: the maintainer must choose an unused
-release version and approve an SSH public owner key or intentionally omit
-owners. The existing registry location is
-`thomashoneyman/purescript-halogen-store`, licensed MIT. No release or ownership
-change is implied by this development migration.
 
 ## Quick Start
 

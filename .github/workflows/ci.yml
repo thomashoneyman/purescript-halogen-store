@@ -23,7 +23,7 @@ jobs:
       - name: Install pinned development tools
         run: npm ci
 
-      - name: Build source and all examples, verify formatting
+      - name: Build source and examples, smoke-test runner, verify formatting
         run: npm run check
 
       - name: Verify dependency locks remain unchanged
