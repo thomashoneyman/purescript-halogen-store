@@ -11,5 +11,6 @@ output
 generated-docs
 
 *.lock
+!spago.lock
 
 example/**/app.js

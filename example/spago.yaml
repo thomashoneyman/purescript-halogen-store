@@ -1,0 +1,16 @@
+package:
+  name: halogen-store-examples
+  dependencies:
+    - aff
+    - arrays
+    - const
+    - effect
+    - halogen
+    - halogen-hooks
+    - halogen-store
+    - maybe
+    - prelude
+    - strings
+    - tuples
+    - variant
+    - web-events
