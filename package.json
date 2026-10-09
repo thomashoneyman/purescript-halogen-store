@@ -1,8 +1,5 @@
 {
   "private": true,
-  "engines": {
-    "node": ">=24 <25"
-  },
   "scripts": {
     "build": "spago build -p halogen-store --pedantic-packages",
     "test": "spago test -p halogen-store --pedantic-packages",
